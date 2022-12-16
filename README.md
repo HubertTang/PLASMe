@@ -1,17 +1,17 @@
 # PLASMe
 
-PLASMe is a tool to identify PLASMid contigs from short-read assemblies using the Transformer. PLASMe capitalizes on the strength of alignment and learning-based methods. Closely related plasmids can be easily identified using the alignment component in PLASMe, while diverged plasmids can be predicted using order-specific Transformer models.
+PLASMe is a tool to identify plasmid contigs from short-read assemblies using the Transformer. PLASMe capitalizes on the strength of alignment and learning-based methods. Closely related plasmids can be easily identified using the alignment component in PLASMe, while diverged plasmids can be predicted using order-specific Transformer models.
 
 
 # Required Dependencies
 
-1. Python 3.x
-2. Pytorch
-3. diamond
-4. blast
-5. biopython
-6. numpy
-7. pandas
+* Python 3.x
+* Pytorch
+* diamond
+* blast
+* biopython
+* numpy
+* pandas
 
 # Quick install
 
@@ -24,18 +24,18 @@ conda env create -f plasme.yaml
 conda activate plasme
 ```
 
-2. Please download PLASMe by "git clone"
+2. Download PLASMe by "git clone"
 
 ```bash
 git clone https://github.com/HubertTang/PLASMe.git
 cd PLASMe
 ```
 
-3. Please dwnload the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
+3. Download the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
 
 # Usage
 
-PLASMe requires input contigs as fasta format and outputs the predicted plasmid sequences in fasta format.
+PLASMe requires input assembled contigs in Fasta format and outputs the predicted plasmid sequences in Fasta format.
 
 ```bash
 python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS]
