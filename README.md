@@ -15,20 +15,20 @@ PLASMe is a tool to identify plasmid contigs from short-read assemblies using th
 
 # Quick install
 
-1. We recommend using `conda` to install all the dependencies.
+1. Download PLASMe by "git clone"
+
+```bash
+git clone https://github.com/HubertTang/PLASMe.git
+cd PLASMe
+```
+
+2. We recommend using `conda` to install all the dependencies.
 
 ```bash
 # install the plasme
 conda env create -f plasme.yaml
 # activate the environment
 conda activate plasme
-```
-
-2. Download PLASMe by "git clone"
-
-```bash
-git clone https://github.com/HubertTang/PLASMe.git
-cd PLASMe
 ```
 
 3. Download the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
