@@ -94,7 +94,7 @@ def contig2sentance(p2a_path, blast_path, aa_count_path, test_aa_path, pc_thres,
             contig2pcs[contig] = [(idx, pc, evalue)]
 
     # print("The number of no reference aa:", num_no_ref, len(nonref_seq_query))
-    print("The number of no reference aa:", len(nonref_seq_query))
+    # print("The number of no reference aa:", len(nonref_seq_query))
 
     # Sorted by position
     contig_id_list_f = open(out_dir + '/' + 'sentence_id.list', 'w')

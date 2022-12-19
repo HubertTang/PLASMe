@@ -47,7 +47,7 @@ def split_fasta(fasta_file, num_split=10):
         filename = f"{fasta_file}.{i}"
         with open(filename, "w") as handle:
             count = SeqIO.write(batch, handle, "fasta")
-        print("Wrote %i records to %s" % (count, filename))
+        # print("Wrote %i records to %s" % (count, filename))
         num_files += 1
 
     return num_files
@@ -56,7 +56,7 @@ def split_fasta(fasta_file, num_split=10):
 def prodigal(dna_path):
     """Run prodigal.
     """
-    subprocess.run(f"prodigal -i {dna_path} -o {dna_path}.gff -a {dna_path}.aa_ -f gff -p meta", shell=True)
+    subprocess.run(f"prodigal -i {dna_path} -o {dna_path}.gff -a {dna_path}.aa_ -f gff -p meta -q", shell=True)
 
 
 def run_multi_prodigal(contig_path, threads=32):
@@ -118,5 +118,5 @@ def run_diamond(db_path, query_path, threads):
     """Split the fasta file and run Diamond.
     """
     # subprocess.run(f"./diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --tmpdir /dev/shm", shell=True)
-    subprocess.run(f"diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1", shell=True)
+    subprocess.run(f"diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --quiet", shell=True)
     subprocess.run("awk '{{print $1,$2,$11}}' %s.diamond > %s.abc" % (query_path, query_path), shell=True)

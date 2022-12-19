@@ -151,6 +151,7 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
     #     subprocess.call(f"blastn -query {contig_path} -db {ref_plas_db_path} -num_threads {num_threads} -out {temp_dir}/blastn.csv -outfmt 6", shell=True)
     # else:
     #     subprocess.call(f"makeblastdb -in {ref_plas_db_path} -dbtype nucl -out {ref_plas_db_path}", shell=True)
+    print(f"Align the contigs to the reference plasmids ... ...")
     subprocess.call(f"blastn -query {contig_path} -db {ref_plas_db_path} -num_threads {num_threads} -out {temp_dir}/blastn.csv -outfmt 6", shell=True)
     
     ### assign the taxonomy orders of contigs, and see if they are in the overlapping area
@@ -216,12 +217,14 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
 
     ### run PC transformer in the non-overlapped region
     ## save the non-overlapped contigs and extract the proteins
+    print(f"{len(query_set)} contigs are aligned to the reference database.")
     aln_seq_list = []
     for s in SeqIO.parse(contig_path, 'fasta'):
         if s.id in query_set:
             aln_seq_list.append(s)
     SeqIO.write(aln_seq_list, f"{temp_dir}/align.fna", 'fasta')
 
+    print(f"Predict the proteins in contigs ... ...")
     bio_script.run_multi_prodigal(contig_path=f"{temp_dir}/align.fna", 
                        threads=num_threads)
 
@@ -230,6 +233,7 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
     # run alignment
     p2a_plsdb_mar30_db = f"{db_dir}/plsdb_Mar30.dmnd"
     # p2a_refseq_may05_db = "/home/xubotang2/2020_work/plasmid/Deeplasmid_train/ncbi_refseq_plasmid/refseq_plas.dmnd"
+    print(f"Align the proteins to PC database ... ...")
     bio_script.run_diamond(db_path=p2a_plsdb_mar30_db, 
                 query_path=f"{temp_dir}/align.fna.aa",
                 threads=num_threads)
@@ -251,7 +255,8 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
     src_vocab_size = num_pcs+2
     src_pad_idx = 0
     
-    print("Loading the test data ...")
+    # print("Loading the test data ...")
+    print(f"Predict using PLASMe ... ...")
     test_feat = pkl.load(open(f'{temp_dir}/sentence.feat', 'rb'))
     test_seq_list = []
     with open(f"{temp_dir}/sentence_id.list") as sent_list:
@@ -358,6 +363,8 @@ def plasme_output(rst_path, contig_path, ident_thres, cov_thres, pred_thres, out
 
     SeqIO.write(output_seqs, output_path, 'fasta')
 
+    print(f"Finished. The identified plasmid contigs are saved in {output_path}.")
+
 
 if __name__ == "__main__":
     
@@ -368,7 +375,7 @@ if __name__ == "__main__":
     if os.path.exists(db_dir) and os.listdir(db_dir) != 0:
         if not os.path.exists(f"{db_dir}/plsdb_Mar30.dmnd"):
             build_db(db_dir=db_dir, 
-                    num_threads=plasme_args.thread)
+                     num_threads=plasme_args.thread)
     else:
         if os.path.exists(f"{plasme_work_dir_path}/DB.zip"):
             print("Unzip the reference plasmid database ... ...")
@@ -376,8 +383,7 @@ if __name__ == "__main__":
             build_db(db_dir=db_dir, 
                     num_threads=plasme_args.thread)
         else:
-            print(f"Please download the database: ")
-
+            print(f"Please download the database from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/EW3nhkuiozpMhnkEuiafZhQBRAIsGzKL50RBQP1CSX6RXw?e=8kAGUj)")
 
     temp_dir = ''
     if plasme_args.temp:
@@ -389,7 +395,7 @@ if __name__ == "__main__":
 
     # build the output directory
     if os.path.exists(plasme_args.output):
-        print(f"The output file already exists. Please rename the ")
+        print(f"The output file already exists. Please rename the output file.")
         exit(0)
 
     predict(contig_path=plasme_args.input, 
