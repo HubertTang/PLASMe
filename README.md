@@ -31,7 +31,7 @@ conda env create -f plasme.yaml
 conda activate plasme
 ```
 
-3. Download the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
+3. Download the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/EW3nhkuiozpMhnkEuiafZhQBRAIsGzKL50RBQP1CSX6RXw?e=8kAGUj)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
 
 # Usage
 
