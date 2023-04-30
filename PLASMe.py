@@ -43,41 +43,55 @@ def plasme_cmd():
         '-c', "--coverage",
         default=0.9,
         type=float,
-        help="The minimun coverage of BLASTN.")
+        help="The minimun coverage of BLASTN (default: 0.9).")
     
     parser.add_argument(
         '-i', "--identity",
         default=0.9,
         type=float,
-        help="The minimun identity of BLASTN.")
+        help="The minimun identity of BLASTN (default: 0.9).")
     
     parser.add_argument(
         '-p', "--probability",
-        default=0.9,
+        default=0.5,
         type=float,
-        help="The minimun predicted probability of Transformer.")
+        help="The minimun predicted probability of Transformer  (default: 0.5).")
     
     parser.add_argument(
         '-t', "--thread",
         default=8,
         type=int,
-        help="The number of threads")
+        help="The number of threads  (default: 8).")
+
+    parser.add_argument(
+        '-u', "--unified",
+        default=False,
+        type=bool,
+        help="Using unified Transformer model to predict  (default: False).")
+
+    parser.add_argument(
+        '-m', "--mode",
+        default=None,
+        type=str,
+        help="Using pre-set parameters (default: None).")
 
     parser.add_argument(
         "--temp",
         type=str,
         default=None,
-        help="The temporary directory."
+        help="The temporary directory (default: None)."
         )
 
     # version
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='PLASMe_v1.0'
+        version='PLASMe_v1.1'
     )
 
     plasme_args = parser.parse_args()
+
+    assert plasme_args.mode in ['high-precision', 'balance', 'high-sensitivity'], 'Unknown mode'
 
     return plasme_args
 
@@ -138,7 +152,20 @@ def test(data_loader, model):
     return all_pred, all_logit
 
 
-def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_dir='DB', min_cov=0.15, num_threads=8):
+def find_ranges(lst):
+    from itertools import groupby
+    pos = (j - i for i, j in enumerate(lst))
+    t = 0
+    for i, els in groupby(pos):
+        l = len(list(els))
+        if l > 1:
+            el = lst[t]
+            t += l
+            yield (el, el+l-1)
+
+
+def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, ref_ol_path="plas_overlap.csv",
+            db_dir='DB', min_cov=0.15, num_threads=8, use_unified=False):
     """Identify the plasmids from the contig data.
     """
     ### create the temporary directory for saving the temporary results
@@ -181,6 +208,15 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
     for s in SeqIO.parse(contig_path, 'fasta'):
         query_len_dict[s.id] = len(s.seq)
 
+    # load the reference overlapped regions from plasmids
+    ref_ol_dict = {}
+    with open(ref_ol_path) as rop:
+        for l in rop:
+            l = l.strip().split()
+            ref_id = l[0]
+            ref_ol_list = [(int(i.split('-')[0]), int(i.split('-')[1])) for i in l[1: ]]
+            ref_ol_dict[ref_id] = ref_ol_list
+
     # load the dictionary of order and queries
     order_query_dict = {o: {} for o in all_order_list}
 
@@ -190,6 +226,10 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
             record = l.strip().split()
             query = record[0]
             ref = record[1]
+            query_start = min(int(record[6]), int(record[7])) - 1
+            query_end = max(int(record[6]), int(record[7]))
+            ref_start = min(int(record[8]), int(record[9])) - 1
+            ref_end = max(int(record[8]), int(record[9]))
             ident = float(record[2])/ 100
             aln_len = int(record[3])
             query_cov = aln_len/ query_len_dict[query]
@@ -212,8 +252,33 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
             if query_cov <= min_cov:
                 continue
 
+            # load the overlapped regions in the query plasmids
+            ol_set = set()
+            try:
+                # some references don't contain overlapped regions
+                ol_region = ref_ol_dict[ref]
+                for ol in ol_region:
+                    ol_set.update([i for i in range(ol[0], ol[1])])
+            except KeyError:
+                pass
+
+            # count the start and end positions in the queries
+            query_aln_set = set([i for i in range(ref_start, ref_end)])
+            inter_list = list(set.intersection(query_aln_set, ol_set))
+            
+            query_aln_regions_out = "overlap regions: "
+            if len(inter_list) > 0:
+                ranges_list = list(find_ranges(inter_list))
+                if len(ranges_list) > 0:
+                    for (ref_s, ref_e) in ranges_list:
+                        query_ov_start = query_start + ref_s - ref_start
+                        query_ov_end = query_start + ref_e - ref_start
+                        query_aln_regions_out += f"{query_ov_start}-{query_ov_end} "
+            else:
+                pass
+
             # assign orders for queries
-            order_query_dict[order][query] = (ref, ident, query_cov)
+            order_query_dict[order][query] = (ref, ident, query_cov, query_aln_regions_out)
 
     ### run PC transformer in the non-overlapped region
     ## save the non-overlapped contigs and extract the proteins
@@ -249,7 +314,7 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
     
     ## load the model and run the transformer
     op = open(out_path, 'w')
-    op.write(f"order,query,identity,coverage,PLASMe\n")
+    op.write(f"order,query,identity,coverage,PLASMe,overlap\n")
     pcs2idx = pkl.load(open(f'{temp_dir}/pc2wordsid.dict', 'rb'))
     num_pcs = len(set(pcs2idx.keys()))
     src_vocab_size = num_pcs+2
@@ -283,12 +348,21 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, db_
                                     pad_idx=src_pad_idx,
                                     max_len=400)
 
-            model_path = f"{db_dir}/trans_model/{order}.pt"
+            if use_unified:
+                model_path = f"{db_dir}/trans_model/unified.pt"
+            else:
+                model_path = f"{db_dir}/trans_model/{order}.pt"
+            
             model.load_state_dict(torch.load(model_path, map_location=device))
             y_pred, y_logit = test(test_loader, model)
             
             for s, pred in zip(temp_seq_list, y_logit):
-                op.write(f"{order},{s},{seqs[s][1]},{seqs[s][2]},{pred}\n")
+                op.write(f"{order},{s},{seqs[s][1]},{seqs[s][2]},{pred},{seqs[s][3]}\n")
+
+            # output the results from Blast only
+            for seq in seqs:
+                if seq not in seq_feat_dict:
+                    op.write(f"{order},{seq},{seqs[seq][1]},{seqs[seq][2]},-1,{seqs[seq][3]}\n")
 
     op.close()
 
@@ -303,62 +377,31 @@ def build_db(db_dir, num_threads=8):
 
     # build BLASTN and DIAMOND database
     print("Build DIAMOND and BLAST database ... ...")
-    subprocess.run(f"diamond makedb --in {db_dir}/plsdb_Mar30.fna.aa -d {db_dir}/plsdb_Mar30 -p {num_threads}", shell=True)
+    subprocess.run(f"./diamond makedb --in {db_dir}/plsdb_Mar30.fna.aa -d {db_dir}/plsdb_Mar30 -p {num_threads}", shell=True)
     subprocess.run(f"makeblastdb -in {db_dir}/plsdb_Mar30.fna -dbtype nucl -out {db_dir}/plsdb_Mar30", shell=True)
 
 
 def plasme_output(rst_path, contig_path, ident_thres, cov_thres, pred_thres, output_path):
     """Generate the PLASMe output files.
     """
-    # all_order_list = ['Enterobacterales', 'Lactobacillales', 'Bacillales', 'Pseudomonadales', 
-    #                   'Rhodobacterales', 'Hyphomicrobiales', 'Spirochaetales', 'Corynebacteriales', 
-    #                   'Burkholderiales', 'Xanthomonadales', 'Campylobacterales', 'Thiotrichales', 
-    #                   'Vibrionales', 'Aeromonadales', 'Sphingomonadales', 'Eubacteriales', 
-    #                   'Rhodospirillales', 'Micrococcales', 'Streptomycetales', 'Nostocales', 
-    #                   'Pasteurellales', 'Neisseriales', 'Bacteroidales', 'Legionellales', 
-    #                   'Synechococcales', 'Cytophagales', 'Mycoplasmatales', 'Alteromonadales', 
-    #                   'Chlamydiales', 'Chroococcales', 'Flavobacteriales', 'Thermales', 
-    #                   'Entomoplasmatales', 'Deinococcales', 'other']
-
-    # contig_index = SeqIO.index(contig_path, 'fasta')
-    # pred_order_dict = {order: [] for order in all_order_list}
-    # rst_df = pd.read_csv(rst_path, sep=',')
-    # with open(rst_path) as rp:
-    #     for l in rp:
-    #         record = l.strip().split()
-    #         order = record[0]
-    #         contig = record[1]
-    #         ident_v = float(record[2])
-    #         cov_v = float(record[3])
-    #         pred_v = float(record[4])
-
-    # for order, contig, ident_v, cov_v, pred_v in zip(rst_df['order'], rst_df['query'], 
-    #                                                 rst_df['identity'], rst_df['coverage'], 
-    #                                                 rst_df['PLASMe']):
-    #     if ident_v >= ident_thres and cov_v >= cov_thres:
-    #         pred_order_dict[order].append(contig_index[contig])
-    #     else:
-    #         if pred_v > pred_thres:
-    #             pred_order_dict[order].append(contig_index[contig])
-
-    # for order, seqs in pred_order_dict.items():
-    #     if len(seqs) > 0:
-    #         SeqIO.write(seqs, f"{output_dir}/order.fna", 'fasta')
 
     rst_df = pd.read_csv(rst_path, sep=',')
     pred_plasmid = []
-    for order, contig, ident_v, cov_v, pred_v in zip(rst_df['order'], rst_df['query'], 
+    pred_plasmid_overlap_dict = {}
+    for order, contig, ident_v, cov_v, pred_v, overlap in zip(rst_df['order'], rst_df['query'], 
                                                     rst_df['identity'], rst_df['coverage'], 
-                                                    rst_df['PLASMe']):
+                                                    rst_df['PLASMe'], rst_df['overlap']):
         if ident_v >= ident_thres and cov_v >= cov_thres:
             pred_plasmid.append(contig)
         else:
             if pred_v > pred_thres:
                 pred_plasmid.append(contig)
+        pred_plasmid_overlap_dict[contig] = overlap
 
     output_seqs = []
     for s in SeqIO.parse(contig_path, 'fasta'):
         if s.id in pred_plasmid:
+            s.description = pred_plasmid_overlap_dict[s.id]
             output_seqs.append(s)
 
     SeqIO.write(output_seqs, output_path, 'fasta')
@@ -403,10 +446,27 @@ if __name__ == "__main__":
             ref_tax_path=f"{db_dir}/plsdb_taxon.tsv", 
             temp_dir=temp_dir, 
             out_path=f"{temp_dir}/PLASMe_candidate.csv", 
+            ref_ol_path=f"{db_dir}/plas_overlap.csv",
             db_dir=db_dir, min_cov=0.0, 
             num_threads=plasme_args.thread)
 
+    # 'high-precision', 'balance', 'high-sensitivity'
+    ident = plasme_args.identity
+    covg = plasme_args.coverage
+    prob = plasme_args.probability
+    if plasme_args.mode == 'high-precision':
+        ident, covg = 0.9, 0.9
+        prob = 0.9
+    elif plasme_args.mode == 'balance':
+        ident, covg = 0.9, 0.9
+        prob = 0.5
+    elif plasme_args.mode == 'high-sensitivity':
+        ident, covg = 0.7, 0.1
+        prob = 0.5
+    else:
+        pass
+
     plasme_output(rst_path=f"{temp_dir}/PLASMe_candidate.csv", 
-                  contig_path=plasme_args.input, ident_thres=plasme_args.identity, 
-                  cov_thres=plasme_args.coverage, pred_thres=plasme_args.probability, 
+                  contig_path=plasme_args.input, ident_thres=ident, 
+                  cov_thres=covg, pred_thres=prob, 
                   output_path=f"{plasme_args.output}")

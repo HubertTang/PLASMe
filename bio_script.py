@@ -1,54 +1,75 @@
 from Bio import SeqIO
+import math
 from multiprocessing import Pool
 import os
+import random
 import subprocess
 
 
-def batch_iterator(iterator, batch_size):
-    """Returns lists of length batch_size.
+# def batch_iterator(iterator, batch_size):
+#     """Returns lists of length batch_size.
 
-    This can be used on any iterator, for example to batch up
-    SeqRecord objects from Bio.SeqIO.parse(...), or to batch
-    Alignment objects from Bio.AlignIO.parse(...), or simply
-    lines from a file handle.
+#     This can be used on any iterator, for example to batch up
+#     SeqRecord objects from Bio.SeqIO.parse(...), or to batch
+#     Alignment objects from Bio.AlignIO.parse(...), or simply
+#     lines from a file handle.
 
-    This is a generator function, and it returns lists of the
-    entries from the supplied iterator.  Each list will have
-    batch_size entries, although the final list may be shorter.
-    """
-    entry = True  # Make sure we loop once
-    while entry:
-        batch = []
-        while len(batch) < batch_size:
-            try:
-                entry = iterator.__next__()
-            except StopIteration:
-                entry = None
-            if entry is None:
-                # End of file
-                break
-            batch.append(entry)
-        if batch:
-            yield batch
+#     This is a generator function, and it returns lists of the
+#     entries from the supplied iterator.  Each list will have
+#     batch_size entries, although the final list may be shorter.
+#     """
+#     entry = True  # Make sure we loop once
+#     while entry:
+#         batch = []
+#         while len(batch) < batch_size:
+#             try:
+#                 entry = iterator.__next__()
+#             except StopIteration:
+#                 entry = None
+#             if entry is None:
+#                 # End of file
+#                 break
+#             batch.append(entry)
+#         if batch:
+#             yield batch
+
+
+# def split_fasta(fasta_file, num_split=10):
+#     """Split original fasta file into several fasta files.
+#     """
+#     # num_reads = int(subprocess.check_output("grep -c '^>' {}".format(fasta_file), shell=True).split()[0])
+#     num_seq = 0
+#     for s in SeqIO.parse(fasta_file, 'fasta'):
+#         num_seq += 1
+#     num_per_split = num_seq // num_split + 1
+    
+#     record_iter = SeqIO.parse(fasta_file, "fasta")
+#     num_files = 0
+#     for i, batch in enumerate(batch_iterator(record_iter, num_per_split)):
+#         filename = f"{fasta_file}.{i}"
+#         with open(filename, "w") as handle:
+#             count = SeqIO.write(batch, handle, "fasta")
+#         # print("Wrote %i records to %s" % (count, filename))
+#         num_files += 1
+
+#     return num_files
 
 
 def split_fasta(fasta_file, num_split=10):
     """Split original fasta file into several fasta files.
     """
-    # num_reads = int(subprocess.check_output("grep -c '^>' {}".format(fasta_file), shell=True).split()[0])
-    num_seq = 0
-    for s in SeqIO.parse(fasta_file, 'fasta'):
-        num_seq += 1
-    num_per_split = num_seq // num_split + 1
-    
-    record_iter = SeqIO.parse(fasta_file, "fasta")
+    all_seq_id = [s.id for s in SeqIO.parse(fasta_file, 'fasta')]
+    random.shuffle(all_seq_id)
+
+    num_per_split = math.ceil(len(all_seq_id)/ num_split)
+
     num_files = 0
-    for i, batch in enumerate(batch_iterator(record_iter, num_per_split)):
-        filename = f"{fasta_file}.{i}"
-        with open(filename, "w") as handle:
-            count = SeqIO.write(batch, handle, "fasta")
-        # print("Wrote %i records to %s" % (count, filename))
-        num_files += 1
+    seq_index = SeqIO.index(fasta_file, 'fasta')
+    for i in range(0, len(all_seq_id), num_per_split):
+        if len(all_seq_id[i: i + num_per_split]) > 0:
+            out_seq = [seq_index[s] for s in all_seq_id[i: i + num_per_split]]
+            SeqIO.write(out_seq, f"{fasta_file}.{num_files}", 'fasta')
+            num_files += 1
 
     return num_files
 
@@ -118,5 +139,5 @@ def run_diamond(db_path, query_path, threads):
     """Split the fasta file and run Diamond.
     """
     # subprocess.run(f"./diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --tmpdir /dev/shm", shell=True)
-    subprocess.run(f"diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --quiet", shell=True)
+    subprocess.run(f"./diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --quiet", shell=True)
     subprocess.run("awk '{{print $1,$2,$11}}' %s.diamond > %s.abc" % (query_path, query_path), shell=True)
