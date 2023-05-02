@@ -91,7 +91,7 @@ def plasme_cmd():
 
     plasme_args = parser.parse_args()
 
-    assert plasme_args.mode in ['high-precision', 'balance', 'high-sensitivity'], 'Unknown mode'
+    assert plasme_args.mode in ['high-precision', 'balance', 'high-sensitivity', None], 'Unknown mode'
 
     return plasme_args
 
