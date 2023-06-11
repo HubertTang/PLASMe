@@ -377,7 +377,7 @@ def build_db(db_dir, num_threads=8):
 
     # build BLASTN and DIAMOND database
     print("Build DIAMOND and BLAST database ... ...")
-    subprocess.run(f"./diamond makedb --in {db_dir}/plsdb_Mar30.fna.aa -d {db_dir}/plsdb_Mar30 -p {num_threads}", shell=True)
+    subprocess.run(f"diamond makedb --in {db_dir}/plsdb_Mar30.fna.aa -d {db_dir}/plsdb_Mar30 -p {num_threads}", shell=True)
     subprocess.run(f"makeblastdb -in {db_dir}/plsdb_Mar30.fna -dbtype nucl -out {db_dir}/plsdb_Mar30", shell=True)
 
 

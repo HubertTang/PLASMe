@@ -139,5 +139,5 @@ def run_diamond(db_path, query_path, threads):
     """Split the fasta file and run Diamond.
     """
     # subprocess.run(f"./diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --tmpdir /dev/shm", shell=True)
-    subprocess.run(f"./diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --quiet", shell=True)
+    subprocess.run(f"diamond blastp -d {db_path} -q {query_path} -o {query_path}.diamond -p {threads} -f 6 --sensitive -c1 --quiet", shell=True)
     subprocess.run("awk '{{print $1,$2,$11}}' %s.diamond > %s.abc" % (query_path, query_path), shell=True)
