@@ -13,7 +13,7 @@ PLASMe is a tool to identify plasmid contigs from short-read assemblies using th
 * numpy
 * pandas
 
-# Quick install
+# Quick install (Linux only)
 
 1. Download PLASMe by "git clone"
 
