@@ -31,6 +31,16 @@ conda env create -f plasme.yaml
 conda activate plasme
 ```
 
+> **Reminder:**
+>
+> 1. Lower versions of Anaconda may not be able to install PLASMe (some users have reported that Anaconda version 4.8.4 cannot install PLASMe). If you encounter a `PackagesNotFoundError`, please upgrade Anaconda to a newer version.
+>
+> 2. If you encounter the conda package conflicts issue during installation, please set the `channel_priority`  to `flexible`. The method to set it is as follows:
+>
+>    ```bash
+>    conda config --set channel_priority flexible
+>    ```
+
 3. Download the reference dataset (12.4GB) from [Google Drive](https://drive.google.com/file/d/1E78o9j1Yua6p063OH5NKpiMemjBW4rV0/view?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
 
 # Usage
@@ -38,10 +48,10 @@ conda activate plasme
 PLASMe requires input assembled contigs in Fasta format and outputs the predicted plasmid sequences in Fasta format.
 
 ```bash
-python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS]
+python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS] [OPTIONS]
 ```
 
- more ptional arguments:
+ more optional arguments:
 
    -c, --coverage: the minimum coverage of BLASTN. Default: 0.9.
 
