@@ -25,7 +25,7 @@ def plasmedb_cmd():
         default=8,
         type=int,
         required=False,
-        help="The number of threads  (default: 8)")
+        help="The number of threads used to build the database (Default: 8)")
     
     plasmedb_args = parser.parse_args()
 
