@@ -16,7 +16,7 @@ import  torch.utils.data as Data
 
 
 def plasme_cmd():
-    parser = argparse.ArgumentParser(description="ARGUMENTS")
+    parser = argparse.ArgumentParser(description="PLASMe arguments.")
 
     # argument for dataset
     parser.add_argument(
@@ -379,6 +379,9 @@ def build_db(db_dir, num_threads=8):
     print("Build DIAMOND and BLAST database ... ...")
     subprocess.run(f"diamond makedb --in {db_dir}/plsdb_Mar30.fna.aa -d {db_dir}/plsdb_Mar30 -p {num_threads}", shell=True)
     subprocess.run(f"makeblastdb -in {db_dir}/plsdb_Mar30.fna -dbtype nucl -out {db_dir}/plsdb_Mar30", shell=True)
+    
+    os.remove(f"{db_dir}/plsdb_Mar30.fna")
+    os.remove(f"{db_dir}/plsdb_Mar30.fna.aa")
 
 
 def plasme_output(rst_path, contig_path, ident_thres, cov_thres, pred_thres, output_path):
