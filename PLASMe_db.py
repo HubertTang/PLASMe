@@ -88,30 +88,10 @@ class ProgressBar(object):
         print('', file=self.output)
 
 
-def load_curl(curl_path):
-    """Load the json from the cURL file.
-    """
-    url_link = f""
-    header_json = {}
-
-    with open(curl_path) as curl_p:
-        for l in curl_p:
-            l = l.split("' \\")[0]
-            if l[: 4] == 'curl':
-                url_link = l.split("curl '")[1]
-            elif l[: 4] == '  -H':
-                json_k = l.split("  -H '")[1].split(': ', 1)[0]
-                json_v = l.split(': ', 1)[1]
-                header_json[json_k] = json_v
-
-    # print(url_link, header_json)
-    return url_link, header_json
-
-
-def download_db(curl_link, headers, out_path):
+def download_db(curl_link, out_path):
     """Download the database using curl.
     """
-    response = requests.get(curl_link, headers=headers, stream=True)
+    response = requests.get(curl_link, stream=True)
     with open(out_path, "wb") as f:
 
         filesize = response.headers["Content-Length"]
@@ -131,7 +111,7 @@ def plasme_db(keep_zip=False, num_threads=8):
     """Download and build the database.
     """
     plasme_full_path = pathlib.Path(__file__).parent.resolve()
-    curl_link, headers = load_curl(curl_path="db_curl")
+    curl_link = "https://zenodo.org/record/8046934/files/DB.zip?download=1"
     
     # Check if the Internet is connected.
     if not connect():
@@ -153,14 +133,21 @@ def plasme_db(keep_zip=False, num_threads=8):
         f_md5 = check_md5(file_path=db_zip_path)
         if f_md5 != db_md5:
             print(f"DB.zip is incomplete or corrupted, redownload DB.zip ... ")
-            download_db(curl_link, headers, out_path=db_zip_path)
+            try:
+                subprocess.check_output(f"curl {curl_link} --output {db_zip_path}", shell=True)
+            except subprocess.CalledProcessError:
+                download_db(curl_link, out_path=db_zip_path)
             print(f"Verifying md5 ... ")
             f_md5 = check_md5(file_path=db_zip_path)
             if f_md5 != db_md5:
                 print(f"DB.zip is incomplete or corrupted, please rerun the script to redownload the database.")
+    
     else:
         print(f"Downloading DB.zip ... ")
-        download_db(curl_link, headers, out_path=db_zip_path)
+        try:
+            subprocess.check_output(f"curl {curl_link} --output {db_zip_path}", shell=True)
+        except subprocess.CalledProcessError:
+            download_db(curl_link, out_path=db_zip_path)
         print(f"Verifying md5 ... ")
         f_md5 = check_md5(file_path=db_zip_path)
         if f_md5 != db_md5:

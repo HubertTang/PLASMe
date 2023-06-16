@@ -55,7 +55,7 @@ PLASMe is a tool to identify plasmid contigs from short-read assemblies using th
 
    > **Alternative:**
    >
-   > Download the reference dataset (12.4GB) manually from [Google Drive](https://drive.google.com/file/d/1E78o9j1Yua6p063OH5NKpiMemjBW4rV0/view?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
+   > Download the reference dataset (12.4GB) manually from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) ([Google Drive](https://drive.google.com/file/d/1E78o9j1Yua6p063OH5NKpiMemjBW4rV0/view?usp=sharing) or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
 
 ## Usage
 
