@@ -1,5 +1,7 @@
 # PLASMe
 
+[![DOI](https://zenodo.org/badge/578918028.svg)](https://zenodo.org/badge/latestdoi/578918028)
+
 PLASMe is a tool to identify plasmid contigs from short-read assemblies using the Transformer. PLASMe capitalizes on the strength of alignment and learning-based methods. Closely related plasmids can be easily identified using the alignment component in PLASMe, while diverged plasmids can be predicted using order-specific Transformer models.
 
 ## Required Dependencies
