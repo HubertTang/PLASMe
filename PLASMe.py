@@ -82,6 +82,13 @@ def plasme_cmd():
         help="The temporary directory (default: None)."
         )
 
+    parser.add_argument(
+        "--taxonomy",
+        type=str,
+        default=None,
+        help="Specify a specific taxonomy in order level (default: None)."
+        )
+
     # version
     parser.add_argument(
         '-v', '--version',
@@ -165,7 +172,7 @@ def find_ranges(lst):
 
 
 def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, ref_ol_path="plas_overlap.csv",
-            db_dir='DB', min_cov=0.15, num_threads=8, use_unified=False):
+            db_dir='DB', min_cov=0.15, num_threads=8, use_unified=False, taxonomy=None):
     """Identify the plasmids from the contig data.
     """
     ### create the temporary directory for saving the temporary results
@@ -350,6 +357,8 @@ def predict(contig_path, ref_plas_db_path, ref_tax_path, temp_dir, out_path, ref
 
             if use_unified:
                 model_path = f"{db_dir}/trans_model/unified.pt"
+            elif taxonomy:
+                model_path = f"{db_dir}/trans_model/{taxonomy}.pt"
             else:
                 model_path = f"{db_dir}/trans_model/{order}.pt"
             
@@ -444,6 +453,23 @@ if __name__ == "__main__":
         print(f"The output file already exists. Please rename the output file.")
         exit(0)
 
+    # Specify the taxonomy to be used for the prediction
+    all_order_list = ['Enterobacterales', 'Lactobacillales', 'Bacillales', 'Pseudomonadales', 
+                      'Rhodobacterales', 'Hyphomicrobiales', 'Spirochaetales', 'Corynebacteriales', 
+                      'Burkholderiales', 'Xanthomonadales', 'Campylobacterales', 'Thiotrichales', 
+                      'Vibrionales', 'Aeromonadales', 'Sphingomonadales', 'Eubacteriales', 
+                      'Rhodospirillales', 'Micrococcales', 'Streptomycetales', 'Nostocales', 
+                      'Pasteurellales', 'Neisseriales', 'Bacteroidales', 'Legionellales', 
+                      'Synechococcales', 'Cytophagales', 'Mycoplasmatales', 'Alteromonadales', 
+                      'Chlamydiales', 'Chroococcales', 'Flavobacteriales', 'Thermales', 
+                      'Entomoplasmatales', 'Deinococcales', 'other']
+
+    taxonomy = plasme_args.taxonomy
+    if taxonomy:
+        if taxonomy not in all_order_list:
+            taxonomy = 'unified'
+            print(f"Unknown taxonomy, predict using the 'unified' model.")
+
     predict(contig_path=plasme_args.input, 
             ref_plas_db_path=f"{db_dir}/plsdb_Mar30", 
             ref_tax_path=f"{db_dir}/plsdb_taxon.tsv", 
@@ -451,7 +477,8 @@ if __name__ == "__main__":
             out_path=f"{temp_dir}/PLASMe_candidate.csv", 
             ref_ol_path=f"{db_dir}/plas_overlap.csv",
             db_dir=db_dir, min_cov=0.0, 
-            num_threads=plasme_args.thread)
+            num_threads=plasme_args.thread,
+            taxonomy=taxonomy)
 
     # 'high-precision', 'balance', 'high-sensitivity'
     ident = plasme_args.identity
