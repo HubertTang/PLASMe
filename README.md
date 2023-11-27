@@ -90,6 +90,20 @@ python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS] [OPTIONS]
 python PLASMe.py test.fasta test.plasme.fna -c 0.6 -i 0.6 -p 0.5 -t 8
 ```
 
+## Train the PC-based Transformer model using customized dataset
+
+Considering that you may want to build protein cluster-based Transformer models from scratch, we provide `train_pc_model.py` to demonstrate how to train models using customized protein databases. It includes building the protein cluster database, converting query sequences into numerical vectors, training and evaluating models, and making predictions. To run this script, in addition to installing the required dependencies mentioned above, you will also need to install `mcl` using the following command:
+
+```bash
+conda install -c bioconda mcl
+```
+
+To achieve better results, we have the following recommendations:
+
+1. The protein database should be as comprehensive as possible.
+2. Setting stricter alignment thresholds when aligning query sequences to the PC database can further improve precision.
+3. In classification tasks, PC clusters that lack discriminative power may introduce noise and reduce classification performance. Therefore, it is advisable to remove PC clusters that lack discriminative power.
+
 ## Supplementary data
 
 We have uploaded the supplmentary data into [Google Drive](https://drive.google.com/drive/folders/15ornETzEwJzHi6257-WvwZfINQMNlO_K?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:f:/g/personal/xubotang2-c_my_cityu_edu_hk/Es13c1PbeOtHi10FyeThOP8BCaJ3MyEMCNj33-GUby0DRw?e=wVFybc)), including the PLSDB test set and real data. The detailed information can be found in `README.txt`.
