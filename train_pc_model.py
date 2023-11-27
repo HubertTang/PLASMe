@@ -12,7 +12,7 @@ import  torch
 from    torch import nn
 from    torch import optim
 import  torch.utils.data as Data
-from model import Transformer
+from trans_model import Transformer
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -382,6 +382,8 @@ def predict(test_dir, model_path, pred_ouput, logit_thres=0.5):
 if __name__ == "__main__":
     # Initialization
     num_threads = 8 # the number of threads
+    len_vec = 400   # the length of encoded vector
+    num_epoch = 5 # the number of training epochs
 
     ref_dir = f"path/to/ref_dir"    # the directory for storing references
     ref_proteins = f"path/to/ref_protein.faa"   # the path of reference proteins
@@ -409,13 +411,13 @@ if __name__ == "__main__":
 
     # Build training and validation data
     ntseq2vector(input_nt_path=train_pos_path, ref_dir=ref_dir, 
-                 out_dir=train_pos_data_dir, vec_len=400, threads=8)
+                 out_dir=train_pos_data_dir, vec_len=len_vec, threads=num_threads)
     ntseq2vector(input_nt_path=train_neg_path, ref_dir=ref_dir, 
-                 out_dir=train_neg_data_dir, vec_len=400, threads=8)
+                 out_dir=train_neg_data_dir, vec_len=len_vec, threads=num_threads)
     ntseq2vector(input_nt_path=val_pos_path, ref_dir=ref_dir, 
-                 out_dir=val_pos_data_dir, vec_len=400, threads=8)
+                 out_dir=val_pos_data_dir, vec_len=len_vec, threads=num_threads)
     ntseq2vector(input_nt_path=val_neg_path, ref_dir=ref_dir, 
-                 out_dir=val_neg_data_dir, vec_len=400, threads=8)
+                 out_dir=val_neg_data_dir, vec_len=len_vec, threads=num_threads)
 
     # Train the Transformer model
     train(pos_dir=train_pos_data_dir, neg_dir=train_neg_data_dir, 
@@ -424,6 +426,6 @@ if __name__ == "__main__":
 
     # Predict the labels of testing data
     ntseq2vector(input_nt_path=test_path, ref_dir=ref_dir, 
-                 out_dir=test_data_dir, vec_len=400, threads=8)
+                 out_dir=test_data_dir, vec_len=len_vec, threads=num_threads)
     predict(test_dir=test_data_dir, model_path=model_path, 
             pred_ouput=test_pred_rst, logit_thres=0.5)
