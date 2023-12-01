@@ -57,7 +57,7 @@ PLASMe is a tool to identify plasmid contigs from short-read assemblies using th
 
    > **Alternative:**
    >
-   > Download the reference dataset (12.4GB) manually from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) ([Google Drive](https://drive.google.com/file/d/1E78o9j1Yua6p063OH5NKpiMemjBW4rV0/view?usp=sharing) or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
+   > Download the reference dataset (12.4GB) manually from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) ([OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
 
 ## Usage
 
@@ -83,6 +83,29 @@ python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS] [OPTIONS]
 
    --temp: the path of directory saving temporary files. Default: temp.
 
+## Outputs
+
+### Output files
+
+| Files                        | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| <OUTPUT_PLASMIDS>            | Fasta file of all predicted plasmid contigs                  |
+| <OUTPUT_PLASMIDS>_report.csv | Report file of the description of the identified plasmid contigs |
+
+### Output report format
+
+| Field      | Description                                           |
+| ---------- | ----------------------------------------------------- |
+| contig     | Sequence ID of the query contig                       |
+| length     | Length of the query contig                            |
+| reference  | The best-hit aligned reference plasmid                |
+| order      | Assigned order                                        |
+| evidence   | BLASTn or Transformer                                 |
+| score      | The prediction score (applicable only to Transformer) |
+| amb_region | The ambiguous regions*                                |
+
+\* The ambiguous regions refer to regions that may be shared with the chromosomes. If a query contig contains a large proportion of ambiguous regions, caution must be exercised as it could potentially originate from a chromosome.
+
 ## Example
 
 ```bash
@@ -106,4 +129,4 @@ To achieve better results, we have the following recommendations:
 
 ## Supplementary data
 
-We have uploaded the supplmentary data into [Google Drive](https://drive.google.com/drive/folders/15ornETzEwJzHi6257-WvwZfINQMNlO_K?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:f:/g/personal/xubotang2-c_my_cityu_edu_hk/Es13c1PbeOtHi10FyeThOP8BCaJ3MyEMCNj33-GUby0DRw?e=wVFybc)), including the PLSDB test set and real data. The detailed information can be found in `README.txt`.
+We have uploaded the supplmentary data into [OneDrive](https://portland-my.sharepoint.com/:f:/g/personal/xubotang2-c_my_cityu_edu_hk/Es13c1PbeOtHi10FyeThOP8BCaJ3MyEMCNj33-GUby0DRw?e=wVFybc), including the PLSDB test set and real data. The detailed information can be found in `README.txt`.

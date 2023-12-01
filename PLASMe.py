@@ -442,7 +442,7 @@ def plasme_output(rst_path, blastn_rst, contig_path, ident_thres, cov_thres, pre
     pred_plasmid = []
     pred_plasmid_overlap_dict = {}
     contig_seq_index = SeqIO.index(contig_path, 'fasta')
-    out_info = open(f"{output_path}.csv", 'w')
+    out_info = open(f"{output_path}_report.csv", 'w')
 
     # load blastn results
     query_set = set()
@@ -479,7 +479,7 @@ def plasme_output(rst_path, blastn_rst, contig_path, ident_thres, cov_thres, pre
 
         evidence, score = '', ''
         if pred_v > 0:
-            evidence = 'PLASMe'
+            evidence = 'Transformer'
             score = pred_v
         else:
             evidence = 'BLASTn'
