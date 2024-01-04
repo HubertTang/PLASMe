@@ -380,29 +380,30 @@ def predict(test_dir, model_path, pred_ouput, logit_thres=0.5):
 
 
 if __name__ == "__main__":
-    # Initialization
+    # Initialization (configure the following parameters based on your requirements/ inputs)
     num_threads = 8 # the number of threads
     len_vec = 400   # the length of encoded vector
     num_epoch = 5 # the number of training epochs
-
-    ref_dir = f"path/to/ref_dir"    # the directory for storing references
     ref_proteins = f"path/to/ref_protein.faa"   # the path of reference proteins
-
     train_pos_path = f"path/to/pos.fna" # the path of positive training set
-    train_pos_data_dir = f"path/to/pos" # the directory for storing positive training data
     train_neg_path = f"path/to/neg.fna" # the path of negative training set
-    train_neg_data_dir = f"path/to/neg" # the directory for storing negative training data
-
     val_pos_path = f"path/to/val_pos.fna" # the path of positive validation set
-    val_pos_data_dir = f"path/to/val_pos" # the directory for storing positive validation data
     val_neg_path = f"path/to/val_neg.fna" # the path of negative validation set
-    val_neg_data_dir = f"path/to/val_neg" # the directory for storing negative validation data
-
-    model_path = f"path/to/model.pt"    # the path of trained model
-
     test_path = f"path/to/test.fna" # the path of testing set
-    test_data_dir = f"path/to/test" # the directory for storing testing data
-    test_pred_rst = f"path/to/test.csv" # the path of prediction results
+    model_path = f"path/to/model.pt"    # the path to store the trained model
+    test_pred_rst = f"path/to/test.csv" # the path to store prediction results
+    temp_dir = f"path/to/temporary/folder"    # the path of temporary folder for storing temporary files
+    
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    # the directory for storing temporary data (no need to configure the following paths)
+    ref_dir = f"{temp_dir}/ref_dir"    # the directory for storing references
+    train_pos_data_dir = f"{temp_dir}/pos" # the directory for storing positive training data
+    train_neg_data_dir = f"{temp_dir}/neg" # the directory for storing negative training data
+    val_pos_data_dir = f"{temp_dir}/val_pos" # the directory for storing positive validation data
+    val_neg_data_dir = f"{temp_dir}/val_neg" # the directory for storing negative validation data
+    test_data_dir = f"{temp_dir}/test" # the directory for storing testing data
 
     # Generate protein clusters
     build_pc_db(input_prot_path=ref_proteins, 
@@ -422,7 +423,7 @@ if __name__ == "__main__":
     # Train the Transformer model
     train(pos_dir=train_pos_data_dir, neg_dir=train_neg_data_dir, 
           val_pos_dir=val_pos_data_dir, val_neg_dir=val_neg_data_dir, 
-          model_path=model_path, num_epoch=3)
+          model_path=model_path, num_epoch=num_epoch)
 
     # Predict the labels of testing data
     ntseq2vector(input_nt_path=test_path, ref_dir=ref_dir, 
