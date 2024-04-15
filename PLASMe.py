@@ -32,12 +32,12 @@ def plasme_cmd():
         help="Directory of the output files."
     )
 
-    # parser.add_argument(
-    #     '-d', "--database",
-    #     type=str,
-    #     default="DB",
-    #     help="The default database."
-    #     )
+    parser.add_argument(
+        '-db', "--database",
+        type=str,
+        default="DB",
+        help="The database directory. (Use the full path to specify the location of the database. Default: PLASMe/DB)"
+        )
 
     parser.add_argument(
         '-c', "--coverage",
@@ -511,11 +511,18 @@ if __name__ == "__main__":
     plasme_work_dir_path = os.getcwd()
     plasme_args = plasme_cmd()
 
-    db_dir = f"{plasme_work_dir_path}/DB"
+    if plasme_args.database == 'DB':
+        db_dir = f"{plasme_work_dir_path}/DB"
+    else:
+        db_dir = plasme_args.database
+        if not os.path.exists(db_dir):
+            print(f"Database directory does not exist.")
+            exit(0)
+        
     if os.path.exists(db_dir) and os.listdir(db_dir) != 0:
         if not os.path.exists(f"{db_dir}/plsdb_Mar30.dmnd"):
             build_db(db_dir=db_dir, 
-                     num_threads=plasme_args.thread)
+                    num_threads=plasme_args.thread)
     else:
         if os.path.exists(f"{plasme_work_dir_path}/DB.zip"):
             print("Unzip the reference plasmid database ... ...")
@@ -523,8 +530,8 @@ if __name__ == "__main__":
             build_db(db_dir=db_dir, 
                     num_threads=plasme_args.thread)
         else:
-            print(f"Please download the database from [Google Drive](https://drive.google.com/file/d/1a7iKLI6NFUGHnGAd79wU_CoNvsG4OiBl/view?usp=sharing) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/EW3nhkuiozpMhnkEuiafZhQBRAIsGzKL50RBQP1CSX6RXw?e=8kAGUj)")
-
+            print(f"Please download the database from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) (or [OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/EW3nhkuiozpMhnkEuiafZhQBRAIsGzKL50RBQP1CSX6RXw?e=8kAGUj)")
+    
     temp_dir = ''
     if plasme_args.temp:
         temp_dir = plasme_args.temp
