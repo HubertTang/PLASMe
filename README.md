@@ -55,9 +55,12 @@ PLASMe is a tool to identify plasmid contigs from short-read assemblies using th
 
    --threads: The number of threads used to build the database. Default:  8
 
-   > **Alternative:**
+   > **Alternative 1:**
    >
    > Download the reference dataset (12.4GB) manually from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) ([OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the same directory with `PLASMe.py`. (No need to uncompress it, PLASMe will extract the files and build the database the first time you use it. It will take several minutes.)
+   >
+   > **Alternative 2:**
+   > Download the reference dataset (12.4GB) manually from [Zenodo](https://zenodo.org/record/8046934/files/DB.zip?download=1) ([OneDrive](https://portland-my.sharepoint.com/:u:/g/personal/xubotang2-c_my_cityu_edu_hk/ERYxOA6rEUVLpyWyyWRECWABFKb4F51IYmGlobFvH8GTLw?e=W2zl00)) to the any directory and uncompress it, you will obtain a database folder named `DB`. When using `PLASMe.py`, use the `-d` option to specify the `DB`'s absolute path (not relative path).
 
 ## Usage
 
@@ -68,6 +71,8 @@ python PLASMe.py [INPUT_CONTIG] [OUTPUT_PLASMIDS] [OPTIONS]
 ```
 
  more optional arguments:
+
+   -d, --database: the database directory. (Use the absolute path to specify the location of the database. Default: PLASMe/DB)
 
    -c, --coverage: the minimum coverage of BLASTN. Default: 0.9.
 

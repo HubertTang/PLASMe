@@ -33,10 +33,10 @@ def plasme_cmd():
     )
 
     parser.add_argument(
-        '-db', "--database",
+        '-d', "--database",
         type=str,
         default="DB",
-        help="The database directory. (Use the full path to specify the location of the database. Default: PLASMe/DB)"
+        help="The database directory. (Use the absolute path to specify the location of the database. Default: PLASMe/DB)"
         )
 
     parser.add_argument(
